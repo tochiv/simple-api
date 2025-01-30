@@ -2,37 +2,32 @@
 
 namespace App\Repos;
 
+use App\Domain\Repos\TaskRepositoryInterface;
 use App\Models\Task;
-use Domain\Repos\TaskRepositoryInterface;
-use Illuminate\Http\Request;
 
 class TaskRepository implements TaskRepositoryInterface
 {
-    public function allTasks()
+    public function getAll()
     {
         return Task::all();
     }
 
-    public function getTask(int $id)
+    public function get(int $id)
     {
         return Task::with('participants')->findOrFail($id);
     }
 
-    public function createTask(Request $request)
+    public function create(array $tasks)
     {
-        $tasks = [];
-
-        foreach ($request->tasks as $task) {
-            $tasks[] = Task::create([
-                'name' => $task['name'],
-                'count' => $task['count']
-            ]);
+        $addedTasks = [];
+        foreach ($tasks as $task) {
+            $addedTasks[] = Task::create($task);
         }
 
-        return $tasks;
+        return $addedTasks;
     }
 
-    public function updateTask(Request $request, $id)
+    public function update(array $updateTask, $id)
     {
         $task = Task::find($id);
 
@@ -41,14 +36,14 @@ class TaskRepository implements TaskRepositoryInterface
         }
 
         $task->update([
-            'name' => $request->name,
-            'count' => $request->count
+            'name' => $updateTask['name'],
+            'count' => $updateTask['count'],
         ]);
 
         return $task;
     }
 
-    public function deleteTask($id)
+    public function delete($id)
     {
         $task = Task::find($id);
 

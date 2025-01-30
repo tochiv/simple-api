@@ -11,7 +11,7 @@ class Task extends Model
 
     public function participants()
     {
-        return $this->belongsToMany(Task::class, 'task_participants', 'task_id', 'participant_id');
+        return $this->belongsToMany(Participant::class, 'task_participants', 'task_id', 'participant_id');
     }
     protected $fillable = [
         'name',

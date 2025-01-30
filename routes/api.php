@@ -10,13 +10,14 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::controller(TaskApiController::class)->group(function () {
-    Route::get('tasks', 'index')->name('tasks.index');
-    Route::post('tasks', 'store')->name('tasks.store');
-    Route::put('tasks/{id}', 'update')->name('tasks.update');
-    Route::get('tasks/{id}', 'show')->name('tasks.show');
-    Route::delete('tasks/{id}', 'delete')->name('tasks.delete');
-    Route::post('tasks/{id}/participants', 'addParticipantsToTask')->name('tasks.addParticipantsToTask');
+    Route::get('tasks', 'getTasks')->name('tasks.getTasks');
+    Route::post('tasks', 'createTasks')->name('tasks.createTasks');
+    Route::put('tasks/{id}', 'updateTask')->name('tasks.updateTask');
+    Route::get('tasks/{id}', 'getTask')->name('tasks.getTask');
+    Route::delete('tasks/{id}', 'deleteTask')->name('tasks.deleteTask');
+    Route::post('tasks/{taskId}/participants', 'addParticipantsToTask')->name('tasks.addParticipantsToTask');
 });
+
 
 Route::controller(ParticipantController::class)->group(function () {
     Route::get('participants', 'getParticipants')->name('participants.getParticipants');
