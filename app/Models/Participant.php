@@ -9,6 +9,7 @@ class Participant extends Model
 {
     use HasFactory;
 
+    protected $hidden = ['pivot'];
     public function tasks()
     {
         return $this->belongsToMany(Task::class, 'task_participants', 'participant_id', 'task_id');

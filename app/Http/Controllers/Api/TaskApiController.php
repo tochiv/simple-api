@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Domain\Repos\TaskRepositoryInterface;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\AddParticipantToTaskRequest;
+use App\Http\Requests\StoreTaskRequest;
+use App\Http\Requests\UpdateTaskRequest;
 use App\Models\Participant;
 use App\Models\Task;
 use Illuminate\Http\JsonResponse;
@@ -28,23 +31,23 @@ class TaskApiController extends Controller
         }
     }
 
-    public function createTasks(Request $request) : JsonResponse
+    public function createTasks(StoreTaskRequest $request) : JsonResponse
     {
         try {
-            $task = $this->taskRepository->create($request);
-            return response()->json($task, 201);
+
+            $data = $request->validated();
+            $tasks = $this->taskRepository->create($data['tasks']);
+
+            return response()->json($tasks, 201);
         } catch (\Exception $e) {
             return response()->json(["error" => $e->getMessage()], 500);
         }
     }
 
-    public function updateTask(Request $request, int $id) : JsonResponse
+    public function updateTask(UpdateTaskRequest $request, int $id) : JsonResponse
     {
         try {
-            $data = $request->validate([
-                'name' => 'required',
-                'count' => 'required|integer|min:1|max:10000',
-            ]);
+            $data = $request->validated();
             $task = $this->taskRepository->update($data, $id);
             return response()->json($task, 200);
         } catch (\Exception $e) {
@@ -72,7 +75,7 @@ class TaskApiController extends Controller
         }
     }
 
-    public function addParticipantsToTask(Request $request, int $taskId): JsonResponse
+    public function addParticipantsToTask(AddParticipantToTaskRequest $request, int $taskId): JsonResponse
     {
         $task = Task::find($taskId);
 
@@ -80,15 +83,14 @@ class TaskApiController extends Controller
             return response()->json(["error" => "Task not found"], 404);
         }
 
-        // Получаем только существующих участников
-        $validParticipantIds = Participant::whereIn('id', $request->ids)->pluck('id');
+        // Преобразуем массив объектов [{ "id": 5 }, { "id": 6 }] в массив [5, 6]
+        $participantIds = collect($request->validated()['ids'])->pluck('id')->toArray();
 
-        if ($validParticipantIds->isEmpty()) {
+        if (empty($participantIds)) {
             return response()->json(["error" => "No valid participants found"], 400);
         }
 
-        // Добавляем участников без дубликатов
-        $task->participants()->syncWithoutDetaching($validParticipantIds);
+        $task->participants()->attach($participantIds);
 
         return response()->json(["message" => "Added participants"], 201);
     }
