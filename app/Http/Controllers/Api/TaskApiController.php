@@ -7,10 +7,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\AddParticipantToTaskRequest;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
-use App\Models\Participant;
 use App\Models\Task;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class TaskApiController extends Controller
 {
