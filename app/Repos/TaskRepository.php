@@ -38,6 +38,7 @@ class TaskRepository implements TaskRepositoryInterface
         $task->update([
             'name' => $updateTask['name'],
             'count' => $updateTask['count'],
+            'image_path' => $updateTask['image_path']
         ]);
 
         return $task;

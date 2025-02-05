@@ -7,10 +7,13 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\AddParticipantToTaskRequest;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
+use App\Http\Resources\TaskCollectionResource;
+use App\Http\Resources\TaskResource;
 use App\Models\Task;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
 
-class TaskApiController extends Controller
+class TaskController extends Controller
 {
     protected TaskRepositoryInterface $taskRepository;
 
@@ -23,41 +26,49 @@ class TaskApiController extends Controller
     {
         try{
             $tasks = $this->taskRepository->getAll();
-            return response()->json($tasks);
+            return response()->json(TaskCollectionResource::collection($tasks));
         } catch (\Exception $e) {
             return response()->json(["error" => $e->getMessage()], 500);
         }
     }
 
-    public function createTasks(StoreTaskRequest $request) : JsonResponse
-    {
-        try {
-
-            $data = $request->validated();
-            $tasks = $this->taskRepository->create($data['tasks']);
-
-            return response()->json($tasks, 201);
-        } catch (\Exception $e) {
-            return response()->json(["error" => $e->getMessage()], 500);
-        }
-    }
-
-    public function updateTask(UpdateTaskRequest $request, int $id) : JsonResponse
+    public function createTask(StoreTaskRequest $request): JsonResponse
     {
         try {
             $data = $request->validated();
-            $task = $this->taskRepository->update($data, $id);
-            return response()->json($task, 200);
+
+            if ($request->hasFile('image')) {
+                $path = $request->file('image')->store('tasks', 'public');
+                $data['image_path'] = $path;
+            }
+
+            $task = Task::create($data);
+
+            return response()->json(new TaskResource($task), 201);
         } catch (\Exception $e) {
             return response()->json(["error" => $e->getMessage()], 500);
         }
     }
+
+    public function updateTask(UpdateTaskRequest $request, int $id): JsonResponse
+    {
+        $data = $request->validated();
+
+        if ($request->hasFile('image')) {
+            $data['image_path'] = $request->file('image')->store('tasks', 'public');
+        };
+
+        $this->taskRepository->update($data, $id);
+
+        return response()->json($this->taskRepository->get($id), 201);
+    }
+
 
     public function getTask(int $id) : JsonResponse
     {
         try {
             $task = $this->taskRepository->get($id);
-            return response()->json($task, 200);
+            return response()->json(new TaskResource($task), 200);
         } catch (\Exception $e) {
             return response()->json(["error" => "Task not found"], 404);
         }

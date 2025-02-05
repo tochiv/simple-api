@@ -16,6 +16,12 @@ class Task extends Model
     }
     protected $fillable = [
         'name',
-        'count'
+        'count',
+        'image_path'
     ];
+
+    public function getImageUrlAttribute()
+    {
+        return $this->image_path ? asset('storage/' . $this->image_path) : null;
+    }
 }

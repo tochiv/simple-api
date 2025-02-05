@@ -21,11 +21,15 @@ class ParticipantController extends Controller
         return response()->json($this->participantRepository->get($id));
     }
 
-    public function addParticipants(Request $request){
-        $data = $request->participants->validate([
-            'name' => 'required'
+    public function addParticipants(Request $request)
+    {
+        $data = $request->validate([
+            'participants' => 'required|array|min:1',
+            'participants.*.name' => 'required|string|max:255',
         ]);
-        return response()->json($this->participantRepository->create($data), 201);
+        $participants = $this->participantRepository->create($data['participants']);
+
+        return response()->json($participants, 201);
     }
 
     public function updateParticipants(Request $request, int $id){
